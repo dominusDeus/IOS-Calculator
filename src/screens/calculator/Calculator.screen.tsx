@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Text, View} from 'react-native';
 import {theme} from '../../theme/theme';
 import {styles} from '../Calculator.styles';
@@ -27,7 +27,9 @@ export const Calculatorscreen = () => {
 
     if (number.startsWith('0') || number.startsWith('-0')) {
       //decimal
+      console.log('enters strts with -0');
       if (textNumber === '.') {
+        console.log('enters text is .');
         setNumber(number + textNumber);
         // If different from '0' and has decimals already
       } else if (textNumber === '0' && number.includes('.')) {
@@ -35,12 +37,15 @@ export const Calculatorscreen = () => {
         // If different from '0' and doesn't have decimal
       } else if (textNumber !== '0' && !number.includes('.')) {
         setNumber(textNumber);
+      } else if (textNumber !== '0' && number.includes('.')) {
+        setNumber(number + textNumber);
       } else if (textNumber === '0' && !number.includes('.')) {
         setNumber(number);
       } else {
         setNumber(number);
       }
     } else {
+      console.log('should enter here');
       setNumber(number + textNumber);
     }
   };
@@ -87,6 +92,34 @@ export const Calculatorscreen = () => {
     resolvePreviousNumber();
     currentOperation.current = Operations.addition;
   };
+
+  const resolveCalculation = () => {
+    const previousNumberAsNumber = Number(previousNumber);
+    const numberAsNumber = Number(number);
+
+    switch (currentOperation.current) {
+      case Operations.addition:
+        setNumber(`${previousNumberAsNumber + numberAsNumber}`);
+        break;
+      case Operations.division:
+        setNumber(`${previousNumberAsNumber / numberAsNumber}`);
+        break;
+      case Operations.multiplication:
+        setNumber(`${previousNumberAsNumber * numberAsNumber}`);
+        break;
+      case Operations.subtraction:
+        setNumber(`${previousNumberAsNumber - numberAsNumber}`);
+        break;
+    }
+    setPreviousNumber('0');
+    currentOperation.current = undefined;
+  };
+
+  useEffect(() => {
+    if (number === 'NaN' || number === 'Infinity') {
+      setNumber('0');
+    }
+  }, [number]);
   return (
     <View style={styles.container}>
       {previousNumber !== '0' && (
@@ -148,13 +181,9 @@ export const Calculatorscreen = () => {
         <Button
           content="="
           backgroundColor="orange"
-          onPress={wipeCalculations}
+          onPress={resolveCalculation}
         />
       </View>
     </View>
   );
 };
-
-//#2D2D2D gris oscuro
-//#FF9427 naranjita
-//#9B9B9B
